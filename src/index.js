@@ -2,9 +2,12 @@ const app = require('./app');
 const PORT = process.env.PORT || 3000
 const express = require("express")
 const unidadFuncionalRoutes = require("./routes/unidadFuncional.routes")
+const usuariosRoutes = require("./routes/usuarios.routes")
 
 
 app.use("/UF", unidadFuncionalRoutes);
+app.use("/Usuarios", usuariosRoutes);
+
 
 //Transformar una expensa que figura PAGA, pero por error, y debe figurar IMPAGA
 //transformar el valor de una expensa que figura mal cargada
