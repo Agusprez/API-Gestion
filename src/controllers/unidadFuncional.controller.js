@@ -265,6 +265,8 @@ const unidadFuncionalController = {
   impagosSegunPropietario: async (req, res) => {
     try {
       const unidadFuncionalId = req.params.id;
+      const usuarioId = req.body.usuarioId;
+
 
       // Accede al documento principal usando el id proporcionado en la ruta
       const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId);
@@ -275,6 +277,14 @@ const unidadFuncionalController = {
         res.status(404).send('El documento no existe.');
         return;
       }
+      const esUfAsociadaValida = await validarUfAsociada(unidadFuncionalId, usuarioId);
+      // Verifica el resultado de la validación
+      if (!esUfAsociadaValida) {
+        console.log('La clave ufAsociada no coincide con la uf del propietario.');
+        res.status(403).send('El usuario no está habilitado para visualizar este recurso.');
+        return;
+      }
+
 
       // Obtén el nombre del propietario
       const propietarioNombre = unidadFuncionalDoc.data().propietario;
@@ -316,8 +326,6 @@ const unidadFuncionalController = {
       const unidadFuncionalId = req.params.id;
       const usuarioId = req.body.usuarioId;
 
-      console.log(`Valor de la unidad Funcional por parametro ${unidadFuncionalId}`)
-      console.log(`Valor del id del usuario por body ${usuarioId}`)
 
       // Accede al documento principal usando el id proporcionado en la ruta
       const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId);
@@ -329,28 +337,12 @@ const unidadFuncionalController = {
         return;
       }
 
-      // Obtén el documento del usuario
-      const usuarioRef = db.collection('Usuarios').doc(usuarioId);
-      const usuarioDoc = await usuarioRef.get();
 
-      // Verifica si el usuario existe
-      if (!usuarioDoc.exists) {
-        console.log('El usuario no existe.');
-        res.status(404).send('El usuario no existe.');
-        return;
-      }
-
-      // Obtén el valor de la propiedad ufAsociada del usuario
-      const ufAsociadaUsuario = usuarioDoc.data().ufAsociada;
-      console.log(ufAsociadaUsuario)
-
-      // Utiliza la función de validación
-      const esUfAsociadaValida = await validarUfAsociada(unidadFuncionalId, ufAsociadaUsuario);
-
+      const esUfAsociadaValida = await validarUfAsociada(unidadFuncionalId, usuarioId);
       // Verifica el resultado de la validación
       if (!esUfAsociadaValida) {
         console.log('La clave ufAsociada no coincide con la uf del propietario.');
-        res.status(403).send('La clave ufAsociada no coincide con la uf del propietario.');
+        res.status(403).send('El usuario no está habilitado para visualizar este recurso.');
         return;
       }
 
@@ -483,8 +475,23 @@ async function getPeriodosImpagos(unidadFuncionalId) {
 }
 
 // Función para validar la ufAsociada
-const validarUfAsociada = async (unidadFuncionalId, ufAsociadaUsuario) => {
+const validarUfAsociada = async (unidadFuncionalId, usuarioId) => {
   //const unidadFuncionalDoc = await unidadFuncionalRef.get();
+
+  // Obtén el documento del usuario
+  const usuarioRef = db.collection('Usuarios').doc(usuarioId);
+  const usuarioDoc = await usuarioRef.get();
+
+  // Verifica si el usuario existe
+  if (!usuarioDoc.exists) {
+    console.log('El usuario no existe.');
+    res.status(404).send('El usuario no existe.');
+    return;
+  }
+
+  // Obtén el valor de la propiedad ufAsociada del usuario
+  const ufAsociadaUsuario = usuarioDoc.data().ufAsociada;
+  console.log(ufAsociadaUsuario)
 
   // Agrega logs para depuración
   console.log('ufAsociada proporcionada:', ufAsociadaUsuario);
