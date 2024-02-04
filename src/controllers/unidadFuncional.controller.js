@@ -1,6 +1,5 @@
 const { db } = require('../firebase')
 
-
 const unidadFuncionalController = {
   //RUTA PARA OBTENER TODOS LOS DATOS DE LOS PROPIETARIOS Y LAS EXPENSAS MENSUALES/EXTRAORDINARIAS
   obtenerTodo: async (req, res) => {
@@ -315,6 +314,10 @@ const unidadFuncionalController = {
   pagosSegunPropietario: async (req, res) => {
     try {
       const unidadFuncionalId = req.params.id;
+      const usuarioId = req.body.usuarioId;
+
+      console.log(`Valor de la unidad Funcional por parametro ${unidadFuncionalId}`)
+      console.log(`Valor del id del usuario por body ${usuarioId}`)
 
       // Accede al documento principal usando el id proporcionado en la ruta
       const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId);
@@ -323,6 +326,31 @@ const unidadFuncionalController = {
       if (!unidadFuncionalDoc.exists) {
         console.log('El documento no existe.');
         res.status(404).send('El documento no existe.');
+        return;
+      }
+
+      // Obtén el documento del usuario
+      const usuarioRef = db.collection('Usuarios').doc(usuarioId);
+      const usuarioDoc = await usuarioRef.get();
+
+      // Verifica si el usuario existe
+      if (!usuarioDoc.exists) {
+        console.log('El usuario no existe.');
+        res.status(404).send('El usuario no existe.');
+        return;
+      }
+
+      // Obtén el valor de la propiedad ufAsociada del usuario
+      const ufAsociadaUsuario = usuarioDoc.data().ufAsociada;
+      console.log(ufAsociadaUsuario)
+
+      // Utiliza la función de validación
+      const esUfAsociadaValida = await validarUfAsociada(unidadFuncionalId, ufAsociadaUsuario);
+
+      // Verifica el resultado de la validación
+      if (!esUfAsociadaValida) {
+        console.log('La clave ufAsociada no coincide con la uf del propietario.');
+        res.status(403).send('La clave ufAsociada no coincide con la uf del propietario.');
         return;
       }
 
@@ -453,4 +481,18 @@ async function getPeriodosImpagos(unidadFuncionalId) {
     throw error;
   }
 }
+
+// Función para validar la ufAsociada
+const validarUfAsociada = async (unidadFuncionalId, ufAsociadaUsuario) => {
+  //const unidadFuncionalDoc = await unidadFuncionalRef.get();
+
+  // Agrega logs para depuración
+  console.log('ufAsociada proporcionada:', ufAsociadaUsuario);
+  console.log('ufAsociada en el documento principal:', unidadFuncionalId);
+
+  // Verifica si la clave ufAsociada coincide con la uf del propietario en el documento principal
+  return ufAsociadaUsuario === unidadFuncionalId;
+};
+
+
 module.exports = unidadFuncionalController

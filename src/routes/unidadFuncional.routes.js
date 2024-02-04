@@ -9,7 +9,8 @@ router.get("/pagos/:cuotaMes", unidadFuncionalController.expensasPagadasPorMes);
 router.get("/pagos_ext/:cuotaNro", unidadFuncionalController.expensasPagadosPorNro);
 router.get("/obtenerTodo/:id", unidadFuncionalController.obtenerTodoSegunPropietario);
 router.get("/impagosSegunPropietario/:id", unidadFuncionalController.impagosSegunPropietario);
-router.get("/pagosSegunPropietario/:id", unidadFuncionalController.pagosSegunPropietario);
+
+router.post("/pagosSegunPropietario/:id", unidadFuncionalController.pagosSegunPropietario);
 
 
 router.patch("/ingresarPago/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);

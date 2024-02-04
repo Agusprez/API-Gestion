@@ -4,6 +4,8 @@ const express = require("express")
 const unidadFuncionalRoutes = require("./routes/unidadFuncional.routes")
 const usuariosRoutes = require("./routes/usuarios.routes")
 
+app.use(express.json())
+
 
 app.use("/UF", unidadFuncionalRoutes);
 app.use("/Usuarios", usuariosRoutes);
