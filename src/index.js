@@ -1,8 +1,10 @@
 const app = require('./app');
-const PORT = process.env.PORT || 4500
+require('dotenv').config();
+const PORT = process.env.PORT || 3000
 const express = require("express")
 const unidadFuncionalRoutes = require("./routes/unidadFuncional.routes")
 const usuariosRoutes = require("./routes/usuarios.routes")
+const loginRoutes = require("./routes/login.routes")
 const cors = require('cors')
 
 app.use(express.json())
@@ -10,6 +12,7 @@ app.use(cors())
 
 app.use("/UF", unidadFuncionalRoutes);
 app.use("/Usuarios", usuariosRoutes);
+app.use("/login", loginRoutes);
 
 
 //Transformar una expensa que figura PAGA, pero por error, y debe figurar IMPAGA
