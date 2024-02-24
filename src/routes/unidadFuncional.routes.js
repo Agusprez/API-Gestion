@@ -3,6 +3,7 @@ const router = express.Router();
 const unidadFuncionalController = require("../controllers/unidadFuncional.controller");
 
 router.get("/", unidadFuncionalController.obtenerTodo);
+router.get("/obtenerListado", unidadFuncionalController.obtenerListado)
 router.get("/pagos", unidadFuncionalController.expensasPagadas);
 router.get("/impagos", unidadFuncionalController.expensasNoPagadas);
 router.get("/pagos/:cuotaMes", unidadFuncionalController.expensasPagadasPorMes);

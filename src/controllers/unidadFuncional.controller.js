@@ -380,6 +380,38 @@ const unidadFuncionalController = {
       res.status(500).send('Error interno del servidor.');
     }
   },
+  obtenerListado: async (req, res) => {
+    try {
+      const querySnapshot = await db.collection('UnidadesFuncionales').get();
+
+      if (querySnapshot.empty) {
+        console.log('No hay documentos en la colección.');
+        res.status(404).send('No hay documentos en la colección.');
+        return;
+      }
+
+      // Inicializar un array para almacenar los datos de las unidades funcionales con sus IDs
+      const unidadFuncionalDataArray = [];
+
+      // Iterar sobre cada documento en la colección
+      querySnapshot.forEach((doc) => {
+        // Obtener el ID del documento
+        const unidadFuncionalId = doc.id;
+
+        // Obtener los datos del documento
+        const unidadFuncionalData = doc.data();
+
+        // Agregar el ID del documento junto con los datos al array
+        unidadFuncionalDataArray.push({ id: unidadFuncionalId, ...unidadFuncionalData });
+      });
+
+      // Enviar los datos como JSON
+      res.json(unidadFuncionalDataArray);
+    } catch (error) {
+      console.error('Error al obtener documentos:', error);
+      res.status(500).send('Error interno del servidor.');
+    }
+  },
   //Peticiones UPDATE
   //Transformar una expensa IMPAGA en PAGA
   //Ruta para marcar una expensa como pagada en una unidad funcional
