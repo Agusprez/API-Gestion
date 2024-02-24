@@ -102,7 +102,27 @@ const loginController = {
       console.error('Error al obtener los datos del usuario:', error);
       return res.status(500).json({ error: 'Error interno del servidor' });
     }
+  },
+  checkemail: async (req, res) => {
+    try {
+      const userEmail = req.body.email; // Obtener el correo electrónico del cuerpo de la solicitud
+
+      // Verificar si existe un usuario con el correo electrónico proporcionado
+      const userDoc = await db.collection('Usuarios').where('email', '==', userEmail).get();
+
+      if (!userDoc.empty) {
+        // Si ya existe un usuario con ese correo electrónico, devolver un mensaje indicándolo
+        return res.json({ exists: true });
+      }
+
+      // Si no hay usuarios con ese correo electrónico, significa que está disponible
+      return res.json({ exists: false });
+    } catch (error) {
+      console.error('Error al verificar el correo electrónico:', error);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
   }
+
 };
 
 
