@@ -56,31 +56,38 @@ const loginController = {
     try {
       // Extraer los datos del nuevo usuario desde el cuerpo de la solicitud
       const { email, password, ufAsociada, nombreCompleto, preguntaSeguridad, respuestaSeguridad } = req.body;
+      if (validarPassword(password)) {
 
-      // Verificar si ya existe un usuario con el mismo correo electrónico
-      const usuarioExistente = await db.collection('Usuarios').where('email', '==', email).get();
-      if (!usuarioExistente.empty) {
-        return res.status(400).json({ error: 'Ya existe un usuario con este correo electrónico.' });
+
+        // Verificar si ya existe un usuario con el mismo correo electrónico
+        const usuarioExistente = await db.collection('Usuarios').where('email', '==', email).get();
+        if (!usuarioExistente.empty) {
+          return res.status(400).json({ error: 'Ya existe un usuario con este correo electrónico.' });
+        }
+
+        // Cifrar la contraseña antes de almacenarla en la base de datos
+        const contraseñaCifrada = await bcrypt.hash(password, 10);
+        const respuestaSeguridadCifrada = await bcrypt.hash(respuestaSeguridad, 10);
+
+        // Crear un nuevo documento de usuario en la base de datos
+        const nuevoUsuarioRef = await db.collection('Usuarios').add({
+          email: email,
+          nombreCompleto: nombreCompleto,
+          password: contraseñaCifrada,
+          permisosDeAdministrador: false,
+          ufAsociadaHabilitada: false,
+          ufAsociada: ufAsociada,
+          preguntaSeguridad: preguntaSeguridad,
+          respuestaSeguridad: respuestaSeguridadCifrada
+          // Otros campos del usuario, como nombre, apellido, etc.
+        });
+
+        // Devolver el ID del nuevo usuario creado como respuesta
+        res.json({ userId: nuevoUsuarioRef.id });
       }
-
-      // Cifrar la contraseña antes de almacenarla en la base de datos
-      const contraseñaCifrada = await bcrypt.hash(password, 10);
-      const respuestaSeguridadCifrada = await bcrypt.hash(respuestaSeguridad, 10);
-
-      // Crear un nuevo documento de usuario en la base de datos
-      const nuevoUsuarioRef = await db.collection('Usuarios').add({
-        email: email,
-        nombreCompleto: nombreCompleto,
-        password: contraseñaCifrada,
-        permisosDeAdministrador: false,
-        ufAsociada: ufAsociada,
-        preguntaSeguridad: preguntaSeguridad,
-        respuestaSeguridad: respuestaSeguridadCifrada
-        // Otros campos del usuario, como nombre, apellido, etc.
-      });
-
-      // Devolver el ID del nuevo usuario creado como respuesta
-      res.json({ userId: nuevoUsuarioRef.id });
+      else {
+        res.status(400).json({ error: "Formato de contraseña invalido. Debe contener al menos una mayuscula, una minuscula y un numero" })
+      }
     } catch (error) {
       console.error('Error al crear nuevo usuario:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
