@@ -297,7 +297,7 @@ const unidadFuncionalController = {
         // Filtrar solo las expensas pagadas
         const expensasPagadas = expensaSnapshot.docs
           .filter(subdoc => subdoc.data().pagado === false)
-          .map(subdoc => subdoc.data());
+          .map(subdoc => ({ ...subdoc.data(), id: subdoc.id }));
 
         return { tipo: expensaNombre, periodosPagados: expensasPagadas };
       });
@@ -409,6 +409,36 @@ const unidadFuncionalController = {
       res.json(unidadFuncionalDataArray);
     } catch (error) {
       console.error('Error al obtener documentos:', error);
+      res.status(500).send('Error interno del servidor.');
+    }
+  },
+  busquedaExpensaPorId: async (req, res) => {
+    try {
+      const idPropietario = req.body.idPropietario;
+      const idExpensaHash = req.body.idExpensaHash;
+      //console.log({ idExpensaHash, idPropietario })
+
+      // Acceder a las colecciones de expensas mensuales y extraordinarias
+      const expensasMensualesRef = db.collection('UnidadesFuncionales').doc(idPropietario).collection('ExpensasMensuales');
+      const expensasExtraordinariasRef = db.collection('UnidadesFuncionales').doc(idPropietario).collection('ExpensasExtraordinarias');
+      // Buscar en la colección de expensas mensuales
+      const expensaMensualDoc = await expensasMensualesRef.doc(idExpensaHash).get();
+      if (expensaMensualDoc.exists) {
+        res.json(expensaMensualDoc.data());
+        return;
+      }
+
+      // Buscar en la colección de expensas extraordinarias
+      const expensaExtraordinariaDoc = await expensasExtraordinariasRef.doc(idExpensaHash).get();
+      if (expensaExtraordinariaDoc.exists) {
+        res.json(expensaExtraordinariaDoc.data());
+        return;
+      }
+      // Si no se encuentra en ninguna de las colecciones, devolver un error
+      console.log('La expensa no fue encontrada.');
+      res.status(404).send('La expensa no fue encontrada.');
+    } catch (error) {
+      console.error('Error al buscar la expensa:', error);
       res.status(500).send('Error interno del servidor.');
     }
   },

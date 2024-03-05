@@ -11,6 +11,7 @@ router.get("/pagos_ext/:cuotaNro", unidadFuncionalController.expensasPagadosPorN
 router.get("/obtenerTodo/:id", unidadFuncionalController.obtenerTodoSegunPropietario);
 router.post("/impagosSegunPropietario/:id", unidadFuncionalController.impagosSegunPropietario);
 router.post("/pagosSegunPropietario/:id", unidadFuncionalController.pagosSegunPropietario);
+router.post("/busquedaExpensa", unidadFuncionalController.busquedaExpensaPorId);
 
 
 router.patch("/ingresarPago/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);
