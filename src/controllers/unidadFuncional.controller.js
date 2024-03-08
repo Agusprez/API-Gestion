@@ -450,6 +450,7 @@ const unidadFuncionalController = {
       const unidadFuncionalId = req.params.unidadFuncionalId;
       const cuota = req.params.cuota;
 
+
       // Obtiene todos los periodos impagos de la unidad funcional
       const periodosImpagos = await getPeriodosImpagos(unidadFuncionalId);
 
@@ -502,6 +503,15 @@ const unidadFuncionalController = {
       console.error('Error al marcar las expensas como pagadas:', error);
       res.status(500).send(`Error interno del servidor: ${error.message}`);
     }
+  },
+  ingresarPago2: async (req, res) => {
+    const unidadFuncionalId = req.params.unidadFuncionalId;
+    const cuota = req.params.cuota
+    const body = req.body
+
+    console.log(unidadFuncionalId)
+    console.log(cuota)
+    console.log(body)
   }
 
 };
