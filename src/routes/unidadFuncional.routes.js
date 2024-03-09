@@ -15,7 +15,6 @@ router.post("/busquedaExpensa", unidadFuncionalController.busquedaExpensaPorId);
 
 
 router.patch("/ingresarPago/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);
-router.patch("/ingresarPago2/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);
 
 
 

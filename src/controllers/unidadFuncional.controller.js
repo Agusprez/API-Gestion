@@ -1,4 +1,4 @@
-const { db } = require('../firebase')
+const { db, timestampService } = require('../firebase')
 
 const unidadFuncionalController = {
   //RUTA PARA OBTENER TODOS LOS DATOS DE LOS PROPIETARIOS Y LAS EXPENSAS MENSUALES/EXTRAORDINARIAS
@@ -449,6 +449,7 @@ const unidadFuncionalController = {
     try {
       const unidadFuncionalId = req.params.unidadFuncionalId;
       const cuota = req.params.cuota;
+      const timestamp = timestampService.now();
 
 
       // Obtiene todos los periodos impagos de la unidad funcional
@@ -479,8 +480,9 @@ const unidadFuncionalController = {
         if (expensaDoc.exists) {
           // Actualiza directamente el campo pagado
           await expensaRef.update({
-            pagado: true
-            // Otros campos que puedas necesitar actualizar
+            pagado: true,
+            fechaDePago: timestamp
+            //TENGO  QUE CARGAR TODOS LOS OTROS DATOS QUE S EMODIFICAN
           });
         } else {
           console.error(`Documento no encontrado para actualizar: ${expensa.id}`);
@@ -503,15 +505,6 @@ const unidadFuncionalController = {
       console.error('Error al marcar las expensas como pagadas:', error);
       res.status(500).send(`Error interno del servidor: ${error.message}`);
     }
-  },
-  ingresarPago2: async (req, res) => {
-    const unidadFuncionalId = req.params.unidadFuncionalId;
-    const cuota = req.params.cuota
-    const body = req.body
-
-    console.log(unidadFuncionalId)
-    console.log(cuota)
-    console.log(body)
   }
 
 };
