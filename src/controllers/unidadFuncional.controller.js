@@ -451,6 +451,10 @@ const unidadFuncionalController = {
       const cuota = req.params.cuota;
       const timestamp = timestampService.now();
 
+      const { valorActualizado, verificado, comprobantePago, diasIntereses, valorIntereses } = req.body;
+
+
+
 
       // Obtiene todos los periodos impagos de la unidad funcional
       const periodosImpagos = await getPeriodosImpagos(unidadFuncionalId);
@@ -481,7 +485,12 @@ const unidadFuncionalController = {
           // Actualiza directamente el campo pagado
           await expensaRef.update({
             pagado: true,
-            fechaDePago: timestamp
+            fechaDePago: timestamp,
+            valorActualizado,
+            verificado,
+            comprobantePago,
+            diasIntereses,
+            valorIntereses
             //TENGO  QUE CARGAR TODOS LOS OTROS DATOS QUE S EMODIFICAN
           });
         } else {
