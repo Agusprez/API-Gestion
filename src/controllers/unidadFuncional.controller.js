@@ -41,7 +41,7 @@ const unidadFuncionalController = {
       res.status(500).send('Error interno del servidor.');
     }
   },
-  //RUTA PARA OBTENER TODOS LOS PERIODOS IMPAGOS DE LOS PROPIETARIOS
+  //RUTA PARA OBTENER TODOS LOS PERIODOS PAGOS DE LOS PROPIETARIOS
   expensasPagadas: async (req, res) => {
     try {
       // Accede a la colección de UnidadesFuncionales
@@ -57,6 +57,7 @@ const unidadFuncionalController = {
       for (const unidadFuncionalDoc of unidadesFuncionalesSnapshot.docs) {
         // Obtén el nombre del propietario
         const propietarioNombre = unidadFuncionalDoc.data().propietario;
+        const idUF = unidadFuncionalDoc.id
 
         // Obtiene las subcolecciones de cada documento
         const expensasPromises = ['ExpensasExtraordinarias', 'ExpensasMensuales'].map(async (expensaNombre) => {
@@ -65,7 +66,11 @@ const unidadFuncionalController = {
 
           // Obtiene las expensas pagadas
           const expensasPagadas = expensaSnapshot.docs.map(subdoc => subdoc.data());
-
+          if (expensaNombre = "ExpensasExtraordinaras") {
+            expensaNombre = "Expensas Extraordinarias"
+          } else if (expensaNombre = "ExpensasMensuales") {
+            expensaNombre = "Expensas Mensuales"
+          }
           return { tipo: expensaNombre, periodosPagados: expensasPagadas };
         });
 
@@ -74,6 +79,7 @@ const unidadFuncionalController = {
 
         // Construye el objeto JSON con la estructura deseada
         const unidadFuncionalResult = {
+          idUF: idUF,
           propietario: propietarioNombre,
           expensas: expensasData
         };
