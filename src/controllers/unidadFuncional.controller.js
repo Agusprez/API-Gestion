@@ -65,7 +65,7 @@ const unidadFuncionalController = {
           const expensaSnapshot = await expensaRef.where('pagado', '==', true).get();
 
           // Obtiene las expensas pagadas
-          const expensasPagadas = expensaSnapshot.docs.map(subdoc => subdoc.data());
+          const expensasPagadas = expensaSnapshot.docs.map(subdoc => ({ idExpensa: subdoc.id, ...subdoc.data() }));
           if (expensaNombre = "ExpensasExtraordinaras") {
             expensaNombre = "Expensas Extraordinarias"
           } else if (expensaNombre = "ExpensasMensuales") {
@@ -520,6 +520,69 @@ const unidadFuncionalController = {
       console.error('Error al marcar las expensas como pagadas:', error);
       res.status(500).send(`Error interno del servidor: ${error.message}`);
     }
+  },
+  verificarPago: async (req, res) => {
+    try {
+      const unidadFuncionalId = req.params.unidadFuncionalId;
+      const idExpensa = req.params.idExpensa;
+      //const timestamp = timestampService.now();
+
+      //const { valorActualizado, verificado, comprobantePago, diasIntereses, valorIntereses } = req.body;
+
+
+
+
+      // Obtiene todos los periodos impagos de la unidad funcional
+      const periodosPagos = await getPeriodosPagos(unidadFuncionalId);
+
+      console.log('Periodos pagos (No verificados):', periodosPagos);
+
+      // Filtra las expensas impagas que coinciden con la cuota proporcionada
+      const expensasPorID = periodosPagos.filter(expensa => expensa.id == idExpensa);
+
+      if (expensasPorID.length === 0) {
+        // No se encontraron expensas para la cuota proporcionada
+        res.status(404).send(`No se encontraron expensas para el ID suministrado.`);
+        return;
+      }
+
+      console.log('Expensas por id que coinciden:', expensasPorID);
+
+      // Marca como pagadas las expensas encontradas
+      const updatePromises = expensasPorID.map(async (expensa) => {
+        const expensaRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId)
+          .collection(expensa.tipo).doc(expensa.id);
+
+        // Verifica si el documento existe antes de intentar actualizarlo
+        const expensaDoc = await expensaRef.get();
+        console.log(expensaRef)
+
+        if (expensaDoc.exists) {
+          // Actualiza directamente el campo pagado
+          await expensaRef.update({
+            verificado: true
+          });
+        } else {
+          console.error(`Documento no encontrado para actualizar: ${expensa.id}`);
+        }
+      });
+
+      await Promise.all(updatePromises);
+
+      // Obtiene nuevamente los periodos impagos para responder con esa información
+      //const periodosImpagosActualizados = await getPeriodosImpagos(unidadFuncionalId);
+
+      //console.log('Periodos impagos actualizados:', periodosImpagosActualizados);
+
+      res.status(200).json({
+        message: `La expensa ingresada ha sido verificada correctamente.`
+        //periodosImpagos: periodosImpagosActualizados
+      });
+
+    } catch (error) {
+      console.error('Error al marcar las expensas como verificada:', error);
+      res.status(500).send(`Error interno del servidor: ${error.message}`);
+    }
   }
 
 };
@@ -553,6 +616,38 @@ async function getPeriodosImpagos(unidadFuncionalId) {
     throw error;
   }
 }
+async function getPeriodosPagos(unidadFuncionalId) {
+  try {
+    const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId);
+
+    const expensasMensualesSnapshot = await unidadFuncionalRef.collection('ExpensasMensuales')
+      .where('pagado', '==', true)
+      .where('verificado', '==', false)
+      .get();
+
+    const expensasExtraordinariasSnapshot = await unidadFuncionalRef.collection('ExpensasExtraordinarias')
+      .where('pagado', '==', true)
+      .where('verificado', '==', false)
+      .get();
+
+    const expensasSnapshot = [...expensasMensualesSnapshot.docs, ...expensasExtraordinariasSnapshot.docs];
+
+    console.log('Expensas pagas (No verificadas) encontradas:', expensasSnapshot.map(doc => doc.id));
+
+    return expensasSnapshot.map(expensaDoc => {
+      const expensaData = expensaDoc.data();
+      return {
+        id: expensaDoc.id,
+        cuota: expensaData.cuotaMes || expensaData.cuotaNro,
+        tipo: expensaData.cuotaMes ? 'ExpensasMensuales' : 'ExpensasExtraordinarias'
+      };
+    });
+  } catch (error) {
+    console.error('Error al obtener periodos impagos:', error);
+    throw error;
+  }
+}
+
 
 // Función para validar la ufAsociada
 const validarUfAsociada = async (unidadFuncionalId, usuarioId) => {
