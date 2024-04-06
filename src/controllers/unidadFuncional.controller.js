@@ -583,7 +583,43 @@ const unidadFuncionalController = {
       console.error('Error al marcar las expensas como verificada:', error);
       res.status(500).send(`Error interno del servidor: ${error.message}`);
     }
-  }
+  },
+  altaNuevaExpensa: async (req, res) => {
+    try {
+      // Extraer los datos del cuerpo de la solicitud
+      const { unidadFuncional, tipoCuota, cuota, valor, fechaDeVencimiento } = req.body;
+
+      // Convertir la fecha en un timestamp de Firebase
+      const fechaISO = new Date(fechaDeVencimiento);
+      fechaISO.setDate(fechaISO.getDate() + 1)
+      const fechaTimeStamp = timestampService.fromDate(fechaISO);
+      const valorNumber = parseFloat(valor)
+
+      // Referencia al documento "unidadFuncional" en la colección "UnidadesFuncionales"
+      const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncional);
+
+      // Determinar el nombre del campo de cuota según el tipo de cuota
+      const nombreCampoCuota = tipoCuota === 'ExpensasMensuales' ? 'cuotaMes' : 'cuotaNro';
+      if (tipoCuota === "cuotaNro") {
+        cuota = parseInt(cuota)
+      }
+      // Añadir un nuevo documento a la subcolección "tipoCuota" dentro del documento "unidadFuncional"
+      await unidadFuncionalRef.collection(tipoCuota).add({
+        [nombreCampoCuota]: cuota,
+        valor: valorNumber,
+        verificado: false,
+        pagado: false,
+        fechaDeVencimiento: fechaTimeStamp  // Almacenar el timestamp en el documento
+      });
+
+      // Respuesta exitosa
+      res.status(200).json({ mensaje: 'Expensa guardada correctamente' });
+    } catch (error) {
+      console.error('Error al guardar la expensa:', error);
+      // Manejar el error y enviar una respuesta de error al cliente
+      res.status(500).json({ mensaje: 'Error al guardar la expensa' });
+    }
+  },
 
 };
 

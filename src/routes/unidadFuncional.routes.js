@@ -13,6 +13,7 @@ router.post("/impagosSegunPropietario/:id", unidadFuncionalController.impagosSeg
 router.post("/pagosSegunPropietario/:id", unidadFuncionalController.pagosSegunPropietario);
 router.post("/busquedaExpensa", unidadFuncionalController.busquedaExpensaPorId);
 
+router.post("/ingresarNuevaExpensa", unidadFuncionalController.altaNuevaExpensa);
 
 router.patch("/ingresarPago/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);
 router.patch("/verificarPago/:unidadFuncionalId/:idExpensa", unidadFuncionalController.verificarPago);
