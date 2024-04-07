@@ -673,8 +673,74 @@ const unidadFuncionalController = {
       res.status(500).json({ mensaje: 'Error al guardar la expensa' });
     }
   },
+  eliminarExpensa: async (req, res) => {
+    const idExpensa = req.body.idExpensa;
+    const tipoCuota = req.body.tipoCuota;
+    const idPropietario = req.body.unidadFuncional;
 
-};
+    try {
+      // Construye la referencia al documento en la subcolección tipoCuota dentro de la colección UnidadesFuncionales
+      const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(idPropietario).collection(tipoCuota).doc(idExpensa)
+      const unidadFuncionalSnapshot = await unidadFuncionalRef.get();
+
+      // Verifica si el documento existe
+      if (!unidadFuncionalSnapshot.exists) {
+        return res.status(404).json({ error: 'No se encontró la Unidad Funcional para eliminar' });
+      }
+
+      // Elimina el documento
+      await unidadFuncionalRef.delete();
+
+      return res.status(200).json({ message: 'Unidad Funcional eliminada correctamente' });
+    } catch (error) {
+      // Si hay un error, responder con un error 500
+      console.error('Error al eliminar la Unidad Funcional:', error);
+      return res.status(500).json({ error: 'Error al eliminar la Unidad Funcional' });
+    }
+  },
+  editarExpensa: async (req, res) => {
+    let { idExpensa, tipoCuota, unidadFuncional, nombreCuota, valorCuota, fechaDeVencimiento } = req.body
+    console.log(fechaDeVencimiento)
+    console.log(nombreCuota)
+    console.log(valorCuota)
+
+    const fechaISO = new Date(fechaDeVencimiento);
+    fechaISO.setDate(fechaISO.getDate() + 1)
+    const fechaTimeStamp = timestampService.fromDate(fechaISO);
+    try {
+      // Construye la referencia al documento en la subcolección tipoCuota dentro de la colección UnidadesFuncionales
+      const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncional).collection(tipoCuota).doc(idExpensa)
+      const unidadFuncionalSnapshot = await unidadFuncionalRef.get();
+
+      // Verifica si el documento existe
+      if (!unidadFuncionalSnapshot.exists) {
+        return res.status(404).json({ error: 'No se encontró la Unidad Funcional para modificar' });
+      }
+      if (tipoCuota === "ExpensasMensuales") {
+        await unidadFuncionalRef.update({
+          cuotaMes: nombreCuota,
+          valor: valorCuota,
+          fechaDeVencimiento: fechaTimeStamp // Se asigna la fecha de vencimiento correctamente
+        });
+      } else if (tipoCuota === "ExpensasExtraordinarias") {
+        await unidadFuncionalRef.update({
+          cuotaNro: nombreCuota,
+          valor: valorCuota,
+          fechaDeVencimiento: fechaTimeStamp // Se asigna la fecha de vencimiento correctamente
+        });
+      }
+
+
+      return res.status(200).json({ message: 'Unidad Funcional modificada correctamente' });
+    } catch (error) {
+      // Si hay un error, responder con un error 500
+      console.error('Error al modificar la Unidad Funcional:', error);
+      return res.status(500).json({ error: 'Error al modificar la Unidad Funcional' });
+    }
+  }
+}
+
+
 
 async function getPeriodosImpagos(unidadFuncionalId) {
   try {

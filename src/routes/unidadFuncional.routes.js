@@ -19,6 +19,9 @@ router.post("/ingresarNuevaExpensa", unidadFuncionalController.altaNuevaExpensa)
 router.patch("/ingresarPago/:unidadFuncionalId/:cuota", unidadFuncionalController.ingresarPago);
 router.patch("/verificarPago/:unidadFuncionalId/:idExpensa", unidadFuncionalController.verificarPago);
 
+router.patch("/editarExpensa", unidadFuncionalController.editarExpensa);
+router.post("/eliminarExpensa", unidadFuncionalController.eliminarExpensa);
+
 
 
 
