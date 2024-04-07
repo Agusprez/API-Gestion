@@ -326,6 +326,59 @@ const unidadFuncionalController = {
       res.status(500).send('Error interno del servidor.');
     }
   },
+  //SIN Verificacion de usuario
+  impagosSegunPropietarioSinUser: async (req, res) => {
+    try {
+      const unidadFuncionalId = req.params.id;
+
+
+
+      // Accede al documento principal usando el id proporcionado en la ruta
+      const unidadFuncionalRef = db.collection('UnidadesFuncionales').doc(unidadFuncionalId);
+      const unidadFuncionalDoc = await unidadFuncionalRef.get();
+
+      if (!unidadFuncionalDoc.exists) {
+        console.log('El documento no existe.');
+        res.status(404).send('El documento no existe.');
+        return;
+      }
+
+
+
+      // Obtén el nombre del propietario
+      const propietarioNombre = unidadFuncionalDoc.data().propietario;
+
+      // Obtén las subcolecciones de cada documento
+      const expensasPromises = ['ExpensasExtraordinarias', 'ExpensasMensuales'].map(async (expensaNombre) => {
+        const expensaRef = unidadFuncionalRef.collection(expensaNombre);
+        const expensaSnapshot = await expensaRef.get();
+
+        // Filtrar solo las expensas pagadas
+        const expensasPagadas = expensaSnapshot.docs
+          .filter(subdoc => subdoc.data().pagado === false)
+          .map(subdoc => ({ ...subdoc.data(), id: subdoc.id }));
+
+        return { tipo: expensaNombre, periodosNoPagados: expensasPagadas };
+      });
+
+      // Espera a que todas las subcolecciones se resuelvan
+      const expensasData = await Promise.all(expensasPromises);
+
+      // Construye el objeto JSON con la estructura deseada
+      const jsonResponse = {
+        propietario: propietarioNombre,
+        expensas: expensasData
+      };
+
+      console.log(jsonResponse);
+
+      // Envía los datos como JSON
+      res.json(jsonResponse);
+    } catch (error) {
+      console.error('Error al obtener documentos:', error);
+      res.status(500).send('Error interno del servidor.');
+    }
+  },
   //RUTA PARA OBTENER, SEGUN PROPIETARIO, LAS EXPENSAS QUE FIGUREN COMO PAGAS
   pagosSegunPropietario: async (req, res) => {
     try {
@@ -587,7 +640,7 @@ const unidadFuncionalController = {
   altaNuevaExpensa: async (req, res) => {
     try {
       // Extraer los datos del cuerpo de la solicitud
-      const { unidadFuncional, tipoCuota, cuota, valor, fechaDeVencimiento } = req.body;
+      let { unidadFuncional, tipoCuota, cuota, valor, fechaDeVencimiento } = req.body;
 
       // Convertir la fecha en un timestamp de Firebase
       const fechaISO = new Date(fechaDeVencimiento);
@@ -600,7 +653,7 @@ const unidadFuncionalController = {
 
       // Determinar el nombre del campo de cuota según el tipo de cuota
       const nombreCampoCuota = tipoCuota === 'ExpensasMensuales' ? 'cuotaMes' : 'cuotaNro';
-      if (tipoCuota === "cuotaNro") {
+      if (nombreCampoCuota === "cuotaNro") {
         cuota = parseInt(cuota)
       }
       // Añadir un nuevo documento a la subcolección "tipoCuota" dentro del documento "unidadFuncional"
