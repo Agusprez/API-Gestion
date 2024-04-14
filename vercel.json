@@ -8,12 +8,20 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "src": "/UF/(.*)",
+      "dest": "src/index.js"
     },
     {
-      "src": "/UF",
-      "dest": "src/controllers/unidadFuncional.controller.js"
+      "src": "/Usuarios/(.*)",
+      "dest": "src/index.js"
+    },
+    {
+      "src": "/login/(.*)",
+      "dest": "src/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
     }
   ]
 }
