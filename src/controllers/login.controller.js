@@ -52,6 +52,11 @@ const loginController = {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },
+  test: (req, res) => {
+    res.json({
+      "message": "Hola desde test"
+    })
+  },
   crearUsuario: async (req, res) => {
     try {
       // Extraer los datos del nuevo usuario desde el cuerpo de la solicitud
