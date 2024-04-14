@@ -1,6 +1,7 @@
 const app = require('./app');
 require('dotenv').config();
 const PORT = process.env.PORT || 3000
+/* const HOST = "192.168.100.110"*/
 const express = require("express")
 const unidadFuncionalRoutes = require("./routes/unidadFuncional.routes")
 const usuariosRoutes = require("./routes/usuarios.routes")

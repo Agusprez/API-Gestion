@@ -40,7 +40,8 @@ const loginController = {
           if (result) {
             // Si la contraseña coincide, obtener el ID de usuario y devolverlo como respuesta
             userId = doc.id;
-            res.json({ userId });
+            ufAsociadaHabilitada = usuario.ufAsociadaHabilitada
+            res.json({ userId, ufAsociadaHabilitada });
           } else {
             // Si la contraseña no coincide, devolver un mensaje de error
             res.status(401).json({ error: 'Credenciales incorrectas' });
